@@ -40,8 +40,8 @@ def coord_check(args, mup, plotdir='', legend=False):
             model = GPT(GPTConfig(
                 train_dataset.vocab_size,
                 train_dataset.block_size,
-                n_layer=8,
-                n_head=8,
+                n_layer=args.nlayers,
+                n_head=args.nhead,
                 n_embd=w,
             ))
             if standparam:
@@ -175,9 +175,11 @@ def main():
         sys.exit()
 
     if args.coord_check:
+        print('testing parametrization')
         os.makedirs('coord_checks', exist_ok=True)
         plotdir = 'coord_checks'
         coord_check(args, mup=False, plotdir=plotdir, legend=False)
+        coord_check(args, mup=True, plotdir=plotdir, legend=False)
         sys.exit()
 
     train(args)
