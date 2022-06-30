@@ -292,7 +292,7 @@ def _get_coord_data(models, dataloader, optcls, nsteps=3,
                             input_fdict=input_fdict,
                             param_fdict=param_fdict)))
                 if dict_in_out:
-                    if cuda:                        
+                    if cuda:
                         for k, v in batch.items():
                             if isinstance(v, torch.Tensor):
                                 batch[k] = v.cuda()
@@ -304,17 +304,17 @@ def _get_coord_data(models, dataloader, optcls, nsteps=3,
                         data, target = data.cuda(), target.cuda()
                     if flatten_input:
                         data = data.view(data.size(0), -1)
-                    output = model(data)
-                    if flatten_output:
-                        output = output.view(-1, output.shape[-1])
-                    if lossfn == 'xent':
-                        loss = F.cross_entropy(output, target)
-                    elif lossfn == 'mse':
-                        loss = F.mse_loss(output, F.one_hot(target, num_classes=output.size(-1)).float())
-                    elif lossfn == 'nll':
-                        loss = F.nll_loss(output, target)
-                    else:
-                        raise NotImplementedError()
+                    logits, loss = model(data, target)
+                    # if flatten_output:
+                    #     output = output.view(-1, output.shape[-1])
+                    # if lossfn == 'xent':
+                    #     loss = F.cross_entropy(output, target)
+                    # elif lossfn == 'mse':
+                    #     loss = F.mse_loss(output, F.one_hot(target, num_classes=output.size(-1)).float())
+                    # elif lossfn == 'nll':
+                    #     loss = F.nll_loss(output, target)
+                    # else:
+                    #     raise NotImplementedError()
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
