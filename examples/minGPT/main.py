@@ -43,6 +43,7 @@ def coord_check(args, mup, plotdir='', legend=False):
                 n_layer=args.nlayers,
                 n_head=args.nhead,
                 n_embd=w,
+                mup=args.mup,
             ))
             if standparam:
                 set_base_shapes(model, None)
@@ -80,10 +81,13 @@ def train(args):
     model = GPT(GPTConfig(
         train_dataset.vocab_size,
         train_dataset.block_size,
-        n_layer=8,
-        n_head=8,
-        n_embd=512,
+        n_layer=args.nlayers,
+        n_head=args.nhead,
+        n_embd=args.d_model,
+        mup=args.mup,
     ))
+    if args.mup:
+        set_base_shapes(model, args.load_base_shapes)
     tconf = TrainerConfig(max_epochs=2, batch_size=args.batch_size, learning_rate=6e-4,
                       lr_decay=True, warmup_tokens=512*20, final_tokens=2*len(train_dataset)*train_dataset.block_size,
                       num_workers=4)
@@ -107,7 +111,7 @@ def train(args):
         optimizer.step()
 
         if it % args.log_interval == 0:
-            logging.info("loss: {}".format(float(np.mean(losses))))
+            logging.info("it: {}, loss: {}".format(it, float(np.mean(losses))))
 
 
 def save_base_shapes(args):
@@ -120,6 +124,7 @@ def save_base_shapes(args):
         n_layer=args.nlayers,
         n_head=args.nhead,
         n_embd=args.d_model,
+        mup=args.mup,
     ))
     print(f'saving base shapes at {args.save_base_shapes}')
     base_shapes = get_shapes(model)
@@ -130,6 +135,7 @@ def save_base_shapes(args):
             n_layer=args.nlayers,
             n_head=args.nhead,
             n_embd=args.d_model * 2,
+            mup=args.mup,
         ))
     )
     make_base_shapes(base_shapes, delta_shapes, savefile=args.save_base_shapes)
@@ -162,6 +168,7 @@ def main():
                         help='Do coord check with this many steps.')
     parser.add_argument('--coord_check_nseeds', type=int, default=3,
                         help='number of seeds for testing correctness of μ parametrization')
+    parser.add_argument("--mup", action="store_true", default=False)
     args = parser.parse_args()
 
     logging.basicConfig(

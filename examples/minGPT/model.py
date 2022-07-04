@@ -23,6 +23,7 @@ class GPTConfig:
     embd_pdrop = 0.1
     resid_pdrop = 0.1
     attn_pdrop = 0.1
+    mup = False
 
     def __init__(self, vocab_size, block_size, **kwargs):
         self.vocab_size = vocab_size
@@ -59,6 +60,7 @@ class CausalSelfAttention(nn.Module):
         self.register_buffer("mask", torch.tril(torch.ones(config.block_size, config.block_size))
                                      .view(1, 1, config.block_size, config.block_size))
         self.n_head = config.n_head
+        self.mup = config.mup
 
     def forward(self, x):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
@@ -69,8 +71,10 @@ class CausalSelfAttention(nn.Module):
         v = self.value(x).view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
 
         # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
-        # att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
-        att = q @ k.transpose(-2, -1) * 8 / k.size(-1)
+        if self.mup:
+            att = q @ k.transpose(-2, -1) * 8 / k.size(-1)
+        else:
+            att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
         att = att.masked_fill(self.mask[:,:,:T,:T] == 0, float('-inf'))
         att = F.softmax(att, dim=-1)
         att = self.attn_drop(att)
@@ -115,8 +119,10 @@ class GPT(nn.Module):
         self.blocks = nn.Sequential(*[Block(config) for _ in range(config.n_layer)])
         # decoder head
         self.ln_f = nn.LayerNorm(config.n_embd)
-        # self.head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
-        self.head = MuReadout(config.n_embd, config.vocab_size)
+        if config.mup:
+            self.head = MuReadout(config.n_embd, config.vocab_size)
+        else:
+            self.head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
         self.block_size = config.block_size
         self.apply(self._init_weights)
