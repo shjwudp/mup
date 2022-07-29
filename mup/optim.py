@@ -77,6 +77,7 @@ def MuAdam(params, impl=Adam, decoupled_wd=False, **kwargs):
             group['lr'] /= width_mult
             if not decoupled_wd:
                 group['weight_decay'] *= width_mult
+            group["width_mult"] = width_mult
         new_param_groups.extend(list(matrix_like_p.values()) + [vector_like_p])
     return impl(new_param_groups, **kwargs)
 
