@@ -5,9 +5,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="mup",
-    version="1.0.0",
+    use_scm_version={"local_scheme": "no-local-version"},
     author="Edward J Hu, Greg Yang, Jianbin Chang",
-    author_email="edwardjhu@edwardjhu.com, gregyang@microsoft.com",
+    author_email="edwardjhu@edwardjhu.com, gregyang@microsoft.com, shjwudp@gmail.com",
     description="Maximal Update Parametrization",
     long_description=long_description,
     long_description_content_type="text/markdown",
