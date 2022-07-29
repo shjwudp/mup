@@ -6,13 +6,12 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name="mup",
     version="1.0.0",
-    author="Edward J Hu, Greg Yang",
+    author="Edward J Hu, Greg Yang, Jianbin Chang",
     author_email="edwardjhu@edwardjhu.com, gregyang@microsoft.com",
     description="Maximal Update Parametrization",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/microsoft/mup",
-    download_url="https://github.com/microsoft/mup/archive/refs/tags/v1.0.0.tar.gz",
+    url="https://github.com/shjwudp/mup",
     install_requires=[
         'numpy',
         'pandas',
